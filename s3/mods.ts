@@ -1,5 +1,5 @@
 import { S3Client } from "https://deno.land/x/s3_lite_client@0.2.0/mod.ts";
-import "dotenv/load.ts";
+import "https://deno.land/x/dotenv@v3.2.0/load.ts";
 
 export const s3client = new S3Client({
   useSSL: true,

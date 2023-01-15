@@ -139,7 +139,7 @@ export class ActiveRecord {
     let sql = "";
     if (this.id === undefined) {
       // insert
-      sql = `INSERT INTO ${this.constructor.table_name()}  `;
+      sql = `INSERT INTO ${this.constructor.tableName()}  `;
       sql += `(${keys.join(",")}) VALUES `;
       sql += `(${keys.map((k) => "?").join(",")})`;
       const result = await client.query(sql, values);
@@ -147,7 +147,7 @@ export class ActiveRecord {
       this.id = result.insertId;
     } else {
       // update
-      sql = `UPDATE ${this.constructor.table_name()} SET `;
+      sql = `UPDATE ${this.constructor.tableName()} SET `;
       sql += keys.map((k) => `${k} = ?`).join(",");
       sql += ` WHERE id = ${SqlString.escape(this.id)}`;
       const result = await client.query(sql, values);
@@ -173,20 +173,20 @@ export class ActiveRecord {
   }
 
   @MemoizeExpiring(5000)
-  static table_name() {
+  static tableName() {
     return pluralize(this.class_name()).toLowerCase();
   }
 
   @MemoizeExpiring(5000)
   static async fields() {
     const client = await this.getConnection();
-    const result = await client.query(`DESCRIBE ${this.table_name()}`);
+    const result = await client.query(`DESCRIBE ${this.tableName()}`);
     await client.close();
-    const _fields = {};
+    const tmp = {};
     for (const v of result) {
-      _fields[v.Field] = v;
+      tmp[v.Field] = v;
     }
-    return _fields;
+    return tmp;
   }
 
   static async execute(
@@ -206,7 +206,7 @@ export class ActiveRecord {
     return result;
   }
 
-  static async find_by_sql(sql: string, args: any[] = []): Promise<any[]> {
+  static async findBySql(sql: string, args: any[] = []): Promise<any[]> {
     const result = await this.execute(sql, args);
     if (result.rows === undefined) {
       return [];
@@ -224,7 +224,7 @@ export class ActiveRecord {
   }
 
   static async find_one(options: FindOptions): Promise<ActiveRecord | null> {
-    const instances = await this.find_all({
+    const instances = await this.findAll({
       conditions: options.conditions,
       limit: 1,
       offset: 0,
@@ -253,7 +253,7 @@ export class ActiveRecord {
     });
   }
 
-  static async find_all(options: FindOptions): Promise<ActiveRecord[]> {
+  static async findAll(options: FindOptions): Promise<ActiveRecord[]> {
     const args: any[] = [];
     let sql = "SELECT ";
     if (options.select) {
@@ -266,7 +266,7 @@ export class ActiveRecord {
       sql += " * ";
     }
 
-    sql += `FROM ${this.table_name()} `;
+    sql += `FROM ${this.tableName()} `;
 
     if (options.conditions) {
       if (options.conditions instanceof Array) {
@@ -301,7 +301,7 @@ export class ActiveRecord {
       }
     }
 
-    const rows = await this.find_by_sql(sql, args);
+    const rows = await this.findBySql(sql, args);
     return rows;
   }
 }

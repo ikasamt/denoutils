@@ -22,6 +22,11 @@ console.error = function (...data: any[]) {
   );
 };
 
+function sqlEscape(str: string): string {
+  const k = SqlString.escape(str);
+  return k.slice(1, k.length - 1);
+}
+
 export type FindOptions = {
   conditions?: { [key: string]: any } | [string, any];
   select?: string[];
@@ -81,13 +86,11 @@ export class ActiveRecord {
     for (const key in this) {
       if (!key.startsWith("_")) {
         tmp.push(new Change(key, this._before[key], this[key]));
-        // retval[key] = [this._before[key], this[key]];
       }
     }
 
     for (const key2 in this._before) {
       tmp.push(new Change(key2, this._before[key2], this[key2 as keyof this]));
-      // retval[key2] = [this._before[key2], this[key2 as keyof this]];
     }
 
     let result = {};
@@ -256,7 +259,7 @@ export class ActiveRecord {
     if (options.select) {
       sql += ` ${options.select
         .map((v: string) => {
-          return SqlString.escape(v);
+          return sqlEscape(v);
         })
         .join(",")} `;
     } else {
@@ -280,8 +283,7 @@ export class ActiveRecord {
       } else {
         const where_pairs = [];
         for (const key in options.conditions) {
-          const k = SqlString.escape(key);
-          where_pairs.push(`${k.slice(1, k.length - 1)} = ? `);
+          where_pairs.push(`${sqlEscape(key)} = ? `);
           args.push(options.conditions[key]);
         }
         sql += `WHERE ${where_pairs.join(" AND ")} `;

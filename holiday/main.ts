@@ -3,8 +3,10 @@ import { walk } from "https://deno.land/std/fs/walk.ts";
 const RE_HOLIDAY = /(.+)\s(\d+)月(\d+)日/
 const RE_YEAR = /(\d+).txt/
 
+let HolidayJSON = {};
+
 async function generateHolidayJSON() {
-    const result = Map<string, any>;
+    const result = {}
     for await (const f of walk("./data/")) {
         if (f.isDirectory){
             continue
@@ -34,8 +36,10 @@ async function generateHolidayJSON() {
     return result
 }
 
+HolidayJSON = await generateHolidayJSON()
 
-let HolidayJSON = await generateHolidayJSON();
-
-console.log(HolidayJSON)
-// console.log(HolidayJSON["2021-1-1"])
+try {
+    Deno.writeTextFile("jp-holiday.json", JSON.stringify(HolidayJSON));
+} catch(e) {
+    console.log(e);
+}

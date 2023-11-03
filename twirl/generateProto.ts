@@ -27,6 +27,7 @@ export async function fetchJSON(url: string, req: any) {
 export async function generateProto(fileName: string): string {
   const content = await Deno.readTextFile(fileName);
   const protoDocument = t.parse(content) as t.ProtoDocument;
+  console.log(protoDocument);
 
   let lines: string[] = [];
   lines.push(fetchFunc());
